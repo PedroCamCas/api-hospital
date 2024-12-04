@@ -1,7 +1,9 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, UnauthorizedException, Put, UseGuards, Get, Param } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserDTO } from './user.dto';
 import { AuthService } from '../auth/auth.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { User } from './user.entity';
 
 @Controller('Users')
 export class UsersController {
@@ -9,6 +11,19 @@ export class UsersController {
     private readonly userService: UsersService,
     private readonly authService: AuthService,
   ) {}
+
+  @Get(":email")
+  @UseGuards(JwtAuthGuard)
+  async findAll(@Param('email') email: string){
+    email = email.toLowerCase();
+    const user = await this.userService.findOneByEmail(email);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'User select',
+      user
+    };
+    
+  }
 
   @Post('register')
   async register(
@@ -30,4 +45,16 @@ export class UsersController {
     }
     return this.authService.generatedToken(user);
   }
+
+  @Put()
+  @UseGuards(JwtAuthGuard)
+  async update(@Body() user: User){
+    const userUpdated = await this.userService.update(user);
+        return {
+            statusCode: HttpStatus.OK,
+            message: 'User updated.',
+            userUpdated
+        };
+  }
+
 }

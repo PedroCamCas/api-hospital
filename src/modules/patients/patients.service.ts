@@ -15,7 +15,7 @@ export class PatientsService {
 
     // Selects de pacientes
     async findAll(): Promise<Patient[]> {
-        return await this.patientRepository.find();
+        return await this.patientRepository.find({relations: ['doctor']});
     }
 
     async findOneById(id: number){
